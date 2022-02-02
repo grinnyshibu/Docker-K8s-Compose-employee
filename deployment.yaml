@@ -1,0 +1,146 @@
+apiVersion: v1
+items:
+- apiVersion: v1
+  kind: Service
+  metadata:
+    creationTimestamp: null
+    labels:
+      app: employee-proxy
+    name: employee-proxy
+  spec:
+    type: NodePort
+    ports:
+    - name: "8081"
+      port: 8081
+      targetPort: 8081
+    selector:
+      app: employee-proxy
+  status:
+    loadBalancer: {}
+- apiVersion: v1
+  kind: Service
+  metadata:
+    creationTimestamp: null
+    labels:
+      app: employee-db-manager
+    name: employee-db-manager
+  spec:
+    type: NodePort
+    ports:
+    - name: "8083"
+      port: 8083
+      targetPort: 8083
+    selector:
+      app: employee-db-manager
+  status:
+    loadBalancer: {}
+- apiVersion: v1
+  kind: Service
+  metadata:
+    creationTimestamp: null
+    labels:
+      app: postgresqldb
+    name: postgresqldb
+  spec:
+    ports:
+    - name: "5433"
+      port: 5433
+      targetPort: 5432
+    selector:
+      app: postgresqldb
+  status:
+    loadBalancer: {}
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    creationTimestamp: null
+    labels:
+      app: employee-proxy
+    name: employee-proxy
+  spec:
+    selector:
+      matchLabels:
+        app: employee-proxy
+    replicas: 1
+    strategy: {}
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          app: employee-proxy
+      spec:
+        containers:
+        - image: grinny/employee-proxy:latest
+          name: employee-proxy
+          ports:
+          - containerPort: 8081
+          imagePullPolicy: Always
+          resources: {}
+        restartPolicy: Always
+  status: {}
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    creationTimestamp: null
+    labels:
+      app: employee-db-manager
+    name: employee-db-manager
+  spec:
+    selector:
+      matchLabels:
+        app: employee-db-manager
+    replicas: 1
+    strategy: {}
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          app: employee-db-manager
+      spec:
+        containers:
+        - image: grinny/employee-db-manager:latest
+          name: employee-db-manager
+          ports:
+          - containerPort: 8083
+          imagePullPolicy: Always
+          resources: {}
+        restartPolicy: Always
+  status: {}
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    creationTimestamp: null
+    labels:
+      app: postgresqldb
+    name: postgresqldb
+  spec:
+    selector:
+      matchLabels:
+        app: postgresqldb
+    replicas: 1
+    strategy: {}
+    template:
+      metadata:
+        creationTimestamp: null
+        labels:
+          app: postgresqldb
+      spec:
+        containers:
+        - env:
+          - name: POSTGRES_PASSWORD
+            value: postgres
+          - name: POSTGRES_USER
+            value: postgres
+          - name: POSTGRES_DB
+            value: employeedb
+          image: grinny/postgres:latest
+          name: postgresqldb
+          ports:
+          - containerPort: 5432
+          imagePullPolicy: Always
+          resources: {}
+        restartPolicy: Always
+  status: {}
+kind: List
+metadata: {}
+
